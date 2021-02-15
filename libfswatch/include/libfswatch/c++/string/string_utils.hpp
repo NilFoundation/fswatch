@@ -24,35 +24,33 @@
  */
 
 #ifndef FSW_STRING_UTILS_H
-#  define FSW_STRING_UTILS_H
+#define FSW_STRING_UTILS_H
 
 #include <cstdarg>
 #include <string>
 
-namespace fsw
-{
-  /**
-   * @brief This namespace contains string manipulation functions.
-   */
-  namespace string_utils
-  {
+namespace fsw {
     /**
-     * @brief Create a `std::string` using a `printf()` format and varargs.
-     *
-     * @param format The `printf()` format.
-     * @param ... The arguments to format.
+     * @brief This namespace contains string manipulation functions.
      */
-    std::string string_from_format(const char *format, ...);
+    namespace string_utils {
+        /**
+         * @brief Create a `std::string` using a `printf()` format and varargs.
+         *
+         * @param format The `printf()` format.
+         * @param ... The arguments to format.
+         */
+        std::string string_from_format(const char *format, ...);
 
-    /**
-     * @brief Create a `std::string` using a `printf()` format and a `va_list`
-     * @p args.
-     *
-     * @param format The `printf()` format.
-     * @param args The arguments to format.
-     */
-    std::string vstring_from_format(const char *format, va_list args);
-  }
-}
+        /**
+         * @brief Create a `std::string` using a `printf()` format and a `va_list`
+         * @p args.
+         *
+         * @param format The `printf()` format.
+         * @param args The arguments to format.
+         */
+        std::string vstring_from_format(const char *format, va_list args);
+    }    // namespace string_utils
+}    // namespace fsw
 
 #endif /* FSW_STRING_UTILS_H */

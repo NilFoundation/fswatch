@@ -29,7 +29,7 @@
 
 #  include <time.h>
 #  include <limits.h>
-#  include "libfswatch_types.h"
+#include <libfswatch/c/libfswatch_types.h>
 
 #  ifdef __cplusplus
 extern "C"

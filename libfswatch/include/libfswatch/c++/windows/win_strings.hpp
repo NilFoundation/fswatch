@@ -24,37 +24,35 @@
  */
 
 #ifndef FSW_WIN_STRINGS_H
-#  define  FSW_WIN_STRINGS_H
+#define FSW_WIN_STRINGS_H
 
-#  include <string>
-#  include <cwchar>
+#include <string>
+#include <cwchar>
 
-namespace fsw
-{
-  /**
-   * @brief String conversion functions.
-   *
-   * This namespace contains utility functions to convert wide character strings
-   * into strings.
-   */
-  namespace win_strings
-  {
+namespace fsw {
     /**
-     * @brief Converts a wide character string into a string.
+     * @brief String conversion functions.
      *
-     * @param s The @c wchar_t array to convert.
-     * @return The converted string.
+     * This namespace contains utility functions to convert wide character strings
+     * into strings.
      */
-    std::string wstring_to_string(wchar_t *s);
+    namespace win_strings {
+        /**
+         * @brief Converts a wide character string into a string.
+         *
+         * @param s The @c wchar_t array to convert.
+         * @return The converted string.
+         */
+        std::string wstring_to_string(wchar_t *s);
 
-    /**
-     * @brief Converts a wide character string into a string.
-     *
-     * @param s The string to convert.
-     * @return The converted string.
-     */
-    std::string wstring_to_string(const std::wstring& s);
-  }
-}
+        /**
+         * @brief Converts a wide character string into a string.
+         *
+         * @param s The string to convert.
+         * @return The converted string.
+         */
+        std::string wstring_to_string(const std::wstring &s);
+    }    // namespace win_strings
+}    // namespace fsw
 
-#endif	/* FSW_WIN_STRINGS_H */
+#endif /* FSW_WIN_STRINGS_H */

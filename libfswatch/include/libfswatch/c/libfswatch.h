@@ -29,11 +29,11 @@
 #define LIBFSW_H
 
 #include <stdbool.h>
-#include "libfswatch_types.h"
-#include "cevent.h"
-#include "cmonitor.h"
-#include "cfilter.h"
-#include "error.h"
+#include <libfswatch/c/libfswatch_types.h>
+#include <libfswatch/c/cevent.h>
+#include <libfswatch/c/cmonitor.h>
+#include <libfswatch/c/cfilter.h>
+#include <libfswatch/c/error.h>
 
 #  ifdef __cplusplus
 extern "C"
