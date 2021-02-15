@@ -13,9 +13,9 @@
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gettext_defs.h"
-#include "path_utils.hpp"
-#include "c/libfswatch_log.h"
+#include <libfswatch/gettext_defs.h>
+#include <libfswatch/c++/path_utils.hpp>
+#include <libfswatch/c/libfswatch_log.h>
 #include <dirent.h>
 #include <cstdlib>
 #include <cstdio>
@@ -25,79 +25,67 @@
 
 using namespace std;
 
-namespace fsw
-{
-  vector<string> get_directory_children(const string& path)
-  {
-    vector<string> children;
-    DIR *dir = opendir(path.c_str());
+namespace fsw {
+    vector<string> get_directory_children(const string &path) {
+        vector<string> children;
+        DIR *dir = opendir(path.c_str());
 
-    if (!dir)
-    {
-      if (errno == EMFILE || errno == ENFILE)
-      {
-        perror("opendir");
-      }
-      else
-      {
-        fsw_log_perror("opendir");
-      }
+        if (!dir) {
+            if (errno == EMFILE || errno == ENFILE) {
+                perror("opendir");
+            } else {
+                fsw_log_perror("opendir");
+            }
 
-      return children;
+            return children;
+        }
+
+        while (struct dirent *ent = readdir(dir)) {
+            children.emplace_back(ent->d_name);
+        }
+
+        closedir(dir);
+
+        return children;
     }
 
-    while (struct dirent *ent = readdir(dir))
-    {
-      children.emplace_back(ent->d_name);
+    bool read_link_path(const string &path, string &link_path) {
+        link_path = fsw_realpath(path.c_str(), nullptr);
+
+        return true;
     }
 
-    closedir(dir);
+    std::string fsw_realpath(const char *path, char *resolved_path) {
+        char *ret = realpath(path, resolved_path);
 
-    return children;
-  }
+        if (ret == nullptr) {
+            if (errno != ENOENT)
+                throw std::system_error(errno, std::generic_category());
 
-  bool read_link_path(const string& path, string& link_path)
-  {
-    link_path = fsw_realpath(path.c_str(), nullptr);
+            return std::string(path);
+        }
 
-    return true;
-  }
+        std::string resolved(ret);
 
-  std::string fsw_realpath(const char *path, char *resolved_path)
-  {
-    char *ret = realpath(path, resolved_path);
+        if (resolved_path == nullptr)
+            free(ret);
 
-    if (ret == nullptr)
-    {
-      if (errno != ENOENT)
-        throw std::system_error(errno, std::generic_category());
-
-      return std::string(path);
+        return resolved;
     }
 
-    std::string resolved(ret);
+    bool stat_path(const string &path, struct stat &fd_stat) {
+        if (stat(path.c_str(), &fd_stat) == 0)
+            return true;
 
-    if (resolved_path == nullptr) free(ret);
+        fsw_logf_perror(_("Cannot stat %s"), path.c_str());
+        return false;
+    }
 
-    return resolved;
-  }
+    bool lstat_path(const string &path, struct stat &fd_stat) {
+        if (lstat(path.c_str(), &fd_stat) == 0)
+            return true;
 
-  bool stat_path(const string& path, struct stat& fd_stat)
-  {
-    if (stat(path.c_str(), &fd_stat) == 0)
-      return true;
-
-    fsw_logf_perror(_("Cannot stat %s"), path.c_str());
-    return false;
-
-  }
-
-  bool lstat_path(const string& path, struct stat& fd_stat)
-  {
-    if (lstat(path.c_str(), &fd_stat) == 0)
-      return true;
-
-    fsw_logf_perror(_("Cannot lstat %s"), path.c_str());
-    return false;
-  }
-}
+        fsw_logf_perror(_("Cannot lstat %s"), path.c_str());
+        return false;
+    }
+}    // namespace fsw

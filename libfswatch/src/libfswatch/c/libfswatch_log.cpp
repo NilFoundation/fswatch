@@ -13,61 +13,63 @@
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "libfswatch.h"
-#include "libfswatch_log.h"
-#include "../c++/string/string_utils.hpp"
+#include <libfswatch/c/libfswatch.h>
+#include <libfswatch/c/libfswatch_log.h>
+
+#include <libfswatch/c++/string/string_utils.hpp>
+
 #include <cstdarg>
 
 using namespace std;
 using namespace fsw;
 
-void fsw_log(const char *msg)
-{
-  if (fsw_is_verbose()) printf("%s", msg);
+void fsw_log(const char *msg) {
+    if (fsw_is_verbose())
+        printf("%s", msg);
 }
 
-void fsw_flog(FILE *f, const char *msg)
-{
-  if (fsw_is_verbose()) fprintf(f, "%s", msg);
+void fsw_flog(FILE *f, const char *msg) {
+    if (fsw_is_verbose())
+        fprintf(f, "%s", msg);
 }
 
-void fsw_logf(const char *format, ...)
-{
-  if (!fsw_is_verbose()) return;
+void fsw_logf(const char *format, ...) {
+    if (!fsw_is_verbose())
+        return;
 
-  va_list args;
-  va_start(args, format);
+    va_list args;
+    va_start(args, format);
 
-  vfprintf(stdout, format, args);
+    vfprintf(stdout, format, args);
 
-  va_end(args);
+    va_end(args);
 }
 
-void fsw_flogf(FILE *f, const char *format, ...)
-{
-  if (!fsw_is_verbose()) return;
+void fsw_flogf(FILE *f, const char *format, ...) {
+    if (!fsw_is_verbose())
+        return;
 
-  va_list args;
-  va_start(args, format);
+    va_list args;
+    va_start(args, format);
 
-  vfprintf(f, format, args);
+    vfprintf(f, format, args);
 
-  va_end(args);
+    va_end(args);
 }
 
-void fsw_log_perror(const char *msg)
-{
-  if (fsw_is_verbose()) perror(msg);
+void fsw_log_perror(const char *msg) {
+    if (fsw_is_verbose())
+        perror(msg);
 }
 
-void fsw_logf_perror(const char *format, ...)
-{
-  if (!fsw_is_verbose()) return;
+void fsw_logf_perror(const char *format, ...) {
+    if (!fsw_is_verbose())
+        return;
 
-  va_list args;
-  va_start(args, format);
+    va_list args;
+    va_start(args, format);
 
-  perror(string_utils::vstring_from_format(format, args).c_str());
+    perror(string_utils::vstring_from_format(format, args).c_str());
 
-  va_end(args);
+    va_end(args);
 }

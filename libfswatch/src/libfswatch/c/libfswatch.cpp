@@ -420,10 +420,10 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include "libfswatch_config.h"
+#include "libfswatch_config.h"
 #endif
 
-#include "gettext_defs.h"
+#include <libfswatch/gettext_defs.h>
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
@@ -431,31 +431,30 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include "libfswatch.h"
-#include "../c++/libfswatch_map.hpp"
-#include "../c++/filter.hpp"
-#include "../c++/monitor.hpp"
-#include "../c++/monitor_factory.hpp"
-#include "../c++/libfswatch_exception.hpp"
+#include <libfswatch/c/libfswatch.h>
+#include <libfswatch/c++/libfswatch_map.hpp>
+#include <libfswatch/c++/filter.hpp>
+#include <libfswatch/c++/monitor.hpp>
+#include <libfswatch/c++/monitor_factory.hpp>
+#include <libfswatch/c++/libfswatch_exception.hpp>
 
 using namespace std;
 using namespace fsw;
 
-typedef struct FSW_SESSION
-{
-  vector<string> paths;
-  fsw_monitor_type type;
-  fsw::monitor *monitor;
-  FSW_CEVENT_CALLBACK callback;
-  double latency;
-  bool allow_overflow;
-  bool recursive;
-  bool directory_only;
-  bool follow_symlinks;
-  vector<monitor_filter> filters;
-  vector<fsw_event_type_filter> event_type_filters;
-  map<string, string> properties;
-  void *data;
+typedef struct FSW_SESSION {
+    vector<string> paths;
+    fsw_monitor_type type;
+    fsw::monitor *monitor;
+    FSW_CEVENT_CALLBACK callback;
+    double latency;
+    bool allow_overflow;
+    bool recursive;
+    bool directory_only;
+    bool follow_symlinks;
+    vector<monitor_filter> filters;
+    vector<fsw_event_type_filter> event_type_filters;
+    map<string, string> properties;
+    void *data;
 } FSW_SESSION;
 
 static bool fsw_libfswatch_verbose = false;
@@ -471,374 +470,312 @@ static FSW_STATUS fsw_set_last_error(const int error);
  * Library initialization routine.  Currently, libfswatch only initializes
  * gettext.
  */
-FSW_STATUS fsw_init_library()
-{
-  // Trigger gettext operations
+FSW_STATUS fsw_init_library() {
+    // Trigger gettext operations
 #ifdef ENABLE_NLS
-  bindtextdomain(PACKAGE, LOCALEDIR);
+    bindtextdomain(PACKAGE, LOCALEDIR);
 #endif
 
-  return FSW_OK;
+    return FSW_OK;
 }
 
-typedef struct fsw_callback_context
-{
-  FSW_HANDLE handle;
-  FSW_CEVENT_CALLBACK callback;
-  void *data;
+typedef struct fsw_callback_context {
+    FSW_HANDLE handle;
+    FSW_CEVENT_CALLBACK callback;
+    void *data;
 } fsw_callback_context;
 
-void libfsw_cpp_callback_proxy(const std::vector<event>& events,
-                               void *context_ptr)
-{
-  // TODO: A C friendly error handler should be notified instead of throwing an exception.
-  if (!context_ptr)
-    throw int(FSW_ERR_MISSING_CONTEXT);
+void libfsw_cpp_callback_proxy(const std::vector<event> &events, void *context_ptr) {
+    // TODO: A C friendly error handler should be notified instead of throwing an exception.
+    if (!context_ptr)
+        throw int(FSW_ERR_MISSING_CONTEXT);
 
-  const fsw_callback_context *context = static_cast<fsw_callback_context *> (context_ptr);
+    const fsw_callback_context *context = static_cast<fsw_callback_context *>(context_ptr);
 
-  fsw_cevent *const cevents = static_cast<fsw_cevent *> (malloc(
-    sizeof(fsw_cevent) * events.size()));
+    fsw_cevent *const cevents = static_cast<fsw_cevent *>(malloc(sizeof(fsw_cevent) * events.size()));
 
-  if (cevents == nullptr)
-    throw int(FSW_ERR_MEMORY);
+    if (cevents == nullptr)
+        throw int(FSW_ERR_MEMORY);
 
-  for (unsigned int i = 0; i < events.size(); ++i)
-  {
-    fsw_cevent *cevt = &cevents[i];
-    const event& evt = events[i];
+    for (unsigned int i = 0; i < events.size(); ++i) {
+        fsw_cevent *cevt = &cevents[i];
+        const event &evt = events[i];
 
-    // Copy event into C event wrapper.
-    const string path = evt.get_path();
+        // Copy event into C event wrapper.
+        const string path = evt.get_path();
 
-    // Copy std::string into char * buffer and null-terminate it.
-    cevt->path = static_cast<char *> (malloc(
-      sizeof(char *) * (path.length() + 1)));
-    if (!cevt->path) throw int(FSW_ERR_MEMORY);
+        // Copy std::string into char * buffer and null-terminate it.
+        cevt->path = static_cast<char *>(malloc(sizeof(char *) * (path.length() + 1)));
+        if (!cevt->path)
+            throw int(FSW_ERR_MEMORY);
 
-    strncpy(cevt->path, path.c_str(), path.length());
-    cevt->path[path.length()] = '\0';
-    cevt->evt_time = evt.get_time();
+        strncpy(cevt->path, path.c_str(), path.length());
+        cevt->path[path.length()] = '\0';
+        cevt->evt_time = evt.get_time();
 
-    const vector<fsw_event_flag> flags = evt.get_flags();
-    cevt->flags_num = flags.size();
+        const vector<fsw_event_flag> flags = evt.get_flags();
+        cevt->flags_num = flags.size();
 
-    if (!cevt->flags_num) cevt->flags = nullptr;
-    else
-    {
-      cevt->flags =
-        static_cast<fsw_event_flag *> (
-          malloc(sizeof(fsw_event_flag) * cevt->flags_num));
-      if (!cevt->flags) throw int(FSW_ERR_MEMORY);
+        if (!cevt->flags_num)
+            cevt->flags = nullptr;
+        else {
+            cevt->flags = static_cast<fsw_event_flag *>(malloc(sizeof(fsw_event_flag) * cevt->flags_num));
+            if (!cevt->flags)
+                throw int(FSW_ERR_MEMORY);
+        }
+
+        for (unsigned int e = 0; e < cevt->flags_num; ++e) {
+            cevt->flags[e] = flags[e];
+        }
     }
 
-    for (unsigned int e = 0; e < cevt->flags_num; ++e)
-    {
-      cevt->flags[e] = flags[e];
+    // TODO manage C++ exceptions from C code
+    (*(context->callback))(cevents, events.size(), context->data);
+
+    // Deallocate memory allocated by events.
+    for (unsigned int i = 0; i < events.size(); ++i) {
+        fsw_cevent *cevt = &cevents[i];
+
+        if (cevt->flags)
+            free(static_cast<void *>(cevt->flags));
+        free(static_cast<void *>(cevt->path));
     }
-  }
 
-  // TODO manage C++ exceptions from C code
-  (*(context->callback))(cevents, events.size(), context->data);
-
-  // Deallocate memory allocated by events.
-  for (unsigned int i = 0; i < events.size(); ++i)
-  {
-    fsw_cevent *cevt = &cevents[i];
-
-    if (cevt->flags) free(static_cast<void *> (cevt->flags));
-    free(static_cast<void *> (cevt->path));
-  }
-
-  free(static_cast<void *> (cevents));
+    free(static_cast<void *>(cevents));
 }
 
-FSW_HANDLE fsw_init_session(const fsw_monitor_type type)
-{
-  FSW_SESSION *session = new FSW_SESSION{};
-  session->type = type;
+FSW_HANDLE fsw_init_session(const fsw_monitor_type type) {
+    FSW_SESSION *session = new FSW_SESSION {};
+    session->type = type;
 
-  return session;
+    return session;
 }
 
-int create_monitor(const FSW_HANDLE handle, const fsw_monitor_type type)
-{
-  try
-  {
+int create_monitor(const FSW_HANDLE handle, const fsw_monitor_type type) {
+    try {
+        FSW_SESSION *session = get_session(handle);
+
+        // Check sufficient data is present to build a monitor.
+        if (!session->callback)
+            return fsw_set_last_error(int(FSW_ERR_CALLBACK_NOT_SET));
+
+        if (session->monitor)
+            return fsw_set_last_error(int(FSW_ERR_MONITOR_ALREADY_EXISTS));
+
+        if (!session->paths.size())
+            return fsw_set_last_error(int(FSW_ERR_PATHS_NOT_SET));
+
+        fsw_callback_context *context_ptr = new fsw_callback_context;
+        context_ptr->handle = session;
+        context_ptr->callback = session->callback;
+        context_ptr->data = session->data;
+
+        monitor *current_monitor =
+            monitor_factory::create_monitor(type, session->paths, libfsw_cpp_callback_proxy, context_ptr);
+        session->monitor = current_monitor;
+    } catch (libfsw_exception &ex) {
+        return fsw_set_last_error(int(ex));
+    } catch (int error) {
+        return fsw_set_last_error(error);
+    }
+
+    return fsw_set_last_error(FSW_OK);
+}
+
+FSW_STATUS fsw_add_path(const FSW_HANDLE handle, const char *path) {
+    if (!path)
+        return fsw_set_last_error(int(FSW_ERR_INVALID_PATH));
+
     FSW_SESSION *session = get_session(handle);
+    session->paths.push_back(path);
 
-    // Check sufficient data is present to build a monitor.
-    if (!session->callback)
-      return fsw_set_last_error(int(FSW_ERR_CALLBACK_NOT_SET));
-
-    if (session->monitor)
-      return fsw_set_last_error(int(FSW_ERR_MONITOR_ALREADY_EXISTS));
-
-    if (!session->paths.size())
-      return fsw_set_last_error(int(FSW_ERR_PATHS_NOT_SET));
-
-    fsw_callback_context *context_ptr = new fsw_callback_context;
-    context_ptr->handle = session;
-    context_ptr->callback = session->callback;
-    context_ptr->data = session->data;
-
-    monitor *current_monitor = monitor_factory::create_monitor(type,
-                                                               session->paths,
-                                                               libfsw_cpp_callback_proxy,
-                                                               context_ptr);
-    session->monitor = current_monitor;
-  }
-  catch (libfsw_exception& ex)
-  {
-    return fsw_set_last_error(int(ex));
-  }
-  catch (int error)
-  {
-    return fsw_set_last_error(error);
-  }
-
-  return fsw_set_last_error(FSW_OK);
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_STATUS fsw_add_path(const FSW_HANDLE handle, const char *path)
-{
-  if (!path)
-    return fsw_set_last_error(int(FSW_ERR_INVALID_PATH));
+FSW_STATUS fsw_add_property(const FSW_HANDLE handle, const char *name, const char *value) {
+    if (!name || !value)
+        return fsw_set_last_error(FSW_ERR_INVALID_PROPERTY);
 
-  FSW_SESSION *session = get_session(handle);
-  session->paths.push_back(path);
+    FSW_SESSION *session = get_session(handle);
+    session->properties[name] = value;
 
-  return fsw_set_last_error(FSW_OK);
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_STATUS fsw_add_property(const FSW_HANDLE handle,
-                            const char *name,
-                            const char *value)
-{
-  if (!name || !value)
-    return fsw_set_last_error(FSW_ERR_INVALID_PROPERTY);
+FSW_STATUS fsw_set_callback(const FSW_HANDLE handle, const FSW_CEVENT_CALLBACK callback, void *data) {
+    if (!callback)
+        return fsw_set_last_error(int(FSW_ERR_INVALID_CALLBACK));
 
-  FSW_SESSION *session = get_session(handle);
-  session->properties[name] = value;
+    FSW_SESSION *session = get_session(handle);
+    session->callback = callback;
+    session->data = data;
 
-  return fsw_set_last_error(FSW_OK);
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_STATUS fsw_set_callback(const FSW_HANDLE handle,
-                            const FSW_CEVENT_CALLBACK callback,
-                            void *data)
-{
-  if (!callback)
-    return fsw_set_last_error(int(FSW_ERR_INVALID_CALLBACK));
+FSW_STATUS fsw_set_allow_overflow(const FSW_HANDLE handle, const bool allow_overflow) {
+    FSW_SESSION *session = get_session(handle);
+    session->allow_overflow = allow_overflow;
 
-  FSW_SESSION *session = get_session(handle);
-  session->callback = callback;
-  session->data = data;
-
-  return fsw_set_last_error(FSW_OK);
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_STATUS fsw_set_allow_overflow(const FSW_HANDLE handle,
-                                  const bool allow_overflow)
-{
-  FSW_SESSION *session = get_session(handle);
-  session->allow_overflow = allow_overflow;
+FSW_STATUS fsw_set_latency(const FSW_HANDLE handle, const double latency) {
+    if (latency < 0)
+        return fsw_set_last_error(int(FSW_ERR_INVALID_LATENCY));
 
-  return fsw_set_last_error(FSW_OK);
+    FSW_SESSION *session = get_session(handle);
+    session->latency = latency;
+
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_STATUS fsw_set_latency(const FSW_HANDLE handle, const double latency)
-{
-  if (latency < 0)
-    return fsw_set_last_error(int(FSW_ERR_INVALID_LATENCY));
+FSW_STATUS fsw_set_recursive(const FSW_HANDLE handle, const bool recursive) {
+    FSW_SESSION *session = get_session(handle);
+    session->recursive = recursive;
 
-  FSW_SESSION *session = get_session(handle);
-  session->latency = latency;
-
-  return fsw_set_last_error(FSW_OK);
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_STATUS fsw_set_recursive(const FSW_HANDLE handle, const bool recursive)
-{
-  FSW_SESSION *session = get_session(handle);
-  session->recursive = recursive;
+FSW_STATUS fsw_set_directory_only(const FSW_HANDLE handle, const bool directory_only) {
+    FSW_SESSION *session = get_session(handle);
+    session->directory_only = directory_only;
 
-  return fsw_set_last_error(FSW_OK);
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_STATUS fsw_set_directory_only(const FSW_HANDLE handle,
-                                  const bool directory_only)
-{
-  FSW_SESSION *session = get_session(handle);
-  session->directory_only = directory_only;
+FSW_STATUS fsw_set_follow_symlinks(const FSW_HANDLE handle, const bool follow_symlinks) {
+    FSW_SESSION *session = get_session(handle);
+    session->follow_symlinks = follow_symlinks;
 
-  return fsw_set_last_error(FSW_OK);
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_STATUS fsw_set_follow_symlinks(const FSW_HANDLE handle,
-                                   const bool follow_symlinks)
-{
-  FSW_SESSION *session = get_session(handle);
-  session->follow_symlinks = follow_symlinks;
+FSW_STATUS fsw_add_event_type_filter(const FSW_HANDLE handle, const fsw_event_type_filter event_type) {
+    FSW_SESSION *session = get_session(handle);
+    session->event_type_filters.push_back(event_type);
 
-  return fsw_set_last_error(FSW_OK);
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_STATUS fsw_add_event_type_filter(const FSW_HANDLE handle,
-                                     const fsw_event_type_filter event_type)
-{
-  FSW_SESSION *session = get_session(handle);
-  session->event_type_filters.push_back(event_type);
+FSW_STATUS fsw_add_filter(const FSW_HANDLE handle, const fsw_cmonitor_filter filter) {
+    FSW_SESSION *session = get_session(handle);
+    session->filters.push_back({filter.text, filter.type, filter.case_sensitive, filter.extended});
 
-  return fsw_set_last_error(FSW_OK);
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_STATUS fsw_add_filter(const FSW_HANDLE handle,
-                          const fsw_cmonitor_filter filter)
-{
-  FSW_SESSION *session = get_session(handle);
-  session->filters.push_back(
-    {filter.text, filter.type, filter.case_sensitive, filter.extended});
-
-  return fsw_set_last_error(FSW_OK);
-}
-
-bool fsw_is_running(const FSW_HANDLE handle)
-{
-  FSW_SESSION *session = get_session(handle);
-
-  if (!session->monitor)
-    return false;
-
-  return session->monitor->is_running();
-}
-
-FSW_STATUS fsw_start_monitor(const FSW_HANDLE handle)
-{
-  try
-  {
+bool fsw_is_running(const FSW_HANDLE handle) {
     FSW_SESSION *session = get_session(handle);
 
     if (!session->monitor)
-    {
-      FSW_STATUS ret = create_monitor(handle, session->type);
+        return false;
 
-      if (ret != FSW_OK)
-        return fsw_set_last_error(ret);
+    return session->monitor->is_running();
+}
+
+FSW_STATUS fsw_start_monitor(const FSW_HANDLE handle) {
+    try {
+        FSW_SESSION *session = get_session(handle);
+
+        if (!session->monitor) {
+            FSW_STATUS ret = create_monitor(handle, session->type);
+
+            if (ret != FSW_OK)
+                return fsw_set_last_error(ret);
+        }
+
+        if (session->monitor == nullptr)    // create_monitor returned OK, but monitor were not created
+            return fsw_set_last_error(FSW_ERR_UNKNOWN_MONITOR_TYPE);
+
+        if (session->monitor->is_running())
+            return fsw_set_last_error(int(FSW_ERR_MONITOR_ALREADY_RUNNING));
+
+        session->monitor->set_allow_overflow(session->allow_overflow);
+        session->monitor->set_filters(session->filters);
+        session->monitor->set_event_type_filters(session->event_type_filters);
+        session->monitor->set_follow_symlinks(session->follow_symlinks);
+        if (session->latency)
+            session->monitor->set_latency(session->latency);
+        session->monitor->set_recursive(session->recursive);
+        session->monitor->set_directory_only(session->directory_only);
+
+        session->monitor->start();
+    } catch (libfsw_exception &ex) {
+        return fsw_set_last_error(int(ex));
+    } catch (int error) {
+        return fsw_set_last_error(error);
     }
 
-    if (session->monitor == nullptr) // create_monitor returned OK, but monitor were not created
-      return fsw_set_last_error(FSW_ERR_UNKNOWN_MONITOR_TYPE);
-
-    if (session->monitor->is_running())
-      return fsw_set_last_error(int(FSW_ERR_MONITOR_ALREADY_RUNNING));
-
-    session->monitor->set_allow_overflow(session->allow_overflow);
-    session->monitor->set_filters(session->filters);
-    session->monitor->set_event_type_filters(session->event_type_filters);
-    session->monitor->set_follow_symlinks(session->follow_symlinks);
-    if (session->latency) session->monitor->set_latency(session->latency);
-    session->monitor->set_recursive(session->recursive);
-    session->monitor->set_directory_only(session->directory_only);
-
-    session->monitor->start();
-  }
-  catch (libfsw_exception& ex)
-  {
-    return fsw_set_last_error(int(ex));
-  }
-  catch (int error)
-  {
-    return fsw_set_last_error(error);
-  }
-
-  return fsw_set_last_error(FSW_OK);
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_STATUS fsw_stop_monitor(const FSW_HANDLE handle)
-{
-  try
-  {
-    FSW_SESSION *session = get_session(handle);
+FSW_STATUS fsw_stop_monitor(const FSW_HANDLE handle) {
+    try {
+        FSW_SESSION *session = get_session(handle);
 
-    if (session->monitor == nullptr)
-      return fsw_set_last_error(int(FSW_ERR_UNKNOWN_MONITOR_TYPE));
+        if (session->monitor == nullptr)
+            return fsw_set_last_error(int(FSW_ERR_UNKNOWN_MONITOR_TYPE));
 
-    if (!session->monitor->is_running())
-      return fsw_set_last_error(int(FSW_OK));
+        if (!session->monitor->is_running())
+            return fsw_set_last_error(int(FSW_OK));
 
-    session->monitor->stop();
-  }
-  catch (libfsw_exception& ex)
-  {
-    return fsw_set_last_error(int(ex));
-  }
-  catch (int error)
-  {
-    return fsw_set_last_error(error);
-  }
-
-  return fsw_set_last_error(FSW_OK);
-}
-
-FSW_STATUS fsw_destroy_session(const FSW_HANDLE handle)
-{
-  int ret = FSW_OK;
-
-  try
-  {
-    FSW_SESSION *session = get_session(handle);
-
-    if (session->monitor)
-    {
-      if (session->monitor->is_running())
-      {
-        return fsw_set_last_error(FSW_ERR_MONITOR_ALREADY_RUNNING);
-      }
-
-      void *context = session->monitor->get_context();
-
-      if (!context)
-      {
-        session->monitor->set_context(nullptr);
-        delete static_cast<fsw_callback_context *> (context);
-      }
-      delete session->monitor;
+        session->monitor->stop();
+    } catch (libfsw_exception &ex) {
+        return fsw_set_last_error(int(ex));
+    } catch (int error) {
+        return fsw_set_last_error(error);
     }
 
-    delete session;
-  }
-  catch (int error)
-  {
-    ret = error;
-  }
-
-  return fsw_set_last_error(ret);
+    return fsw_set_last_error(FSW_OK);
 }
 
-FSW_SESSION *get_session(const FSW_HANDLE handle)
-{
-  return handle;
+FSW_STATUS fsw_destroy_session(const FSW_HANDLE handle) {
+    int ret = FSW_OK;
+
+    try {
+        FSW_SESSION *session = get_session(handle);
+
+        if (session->monitor) {
+            if (session->monitor->is_running()) {
+                return fsw_set_last_error(FSW_ERR_MONITOR_ALREADY_RUNNING);
+            }
+
+            void *context = session->monitor->get_context();
+
+            if (!context) {
+                session->monitor->set_context(nullptr);
+                delete static_cast<fsw_callback_context *>(context);
+            }
+            delete session->monitor;
+        }
+
+        delete session;
+    } catch (int error) {
+        ret = error;
+    }
+
+    return fsw_set_last_error(ret);
 }
 
-FSW_STATUS fsw_set_last_error(const FSW_STATUS error)
-{
-  last_error = error;
-
-  return last_error;
+FSW_SESSION *get_session(const FSW_HANDLE handle) {
+    return handle;
 }
 
-FSW_STATUS fsw_last_error()
-{
-  return last_error;
+FSW_STATUS fsw_set_last_error(const FSW_STATUS error) {
+    last_error = error;
+
+    return last_error;
 }
 
-bool fsw_is_verbose()
-{
-  return fsw_libfswatch_verbose;
+FSW_STATUS fsw_last_error() {
+    return last_error;
 }
 
-void fsw_set_verbose(bool verbose)
-{
-  fsw_libfswatch_verbose = verbose;
+bool fsw_is_verbose() {
+    return fsw_libfswatch_verbose;
+}
+
+void fsw_set_verbose(bool verbose) {
+    fsw_libfswatch_verbose = verbose;
 }
