@@ -24,70 +24,66 @@
  */
 
 #ifndef FSW_INOTIFY_MONITOR_H
-#  define FSW_INOTIFY_MONITOR_H
+#define FSW_INOTIFY_MONITOR_H
 
-#  include "monitor.hpp"
-#  include <sys/inotify.h>
-#  include <string>
-#  include <vector>
-#  include <sys/stat.h>
+#include <libfswatch/c++/monitor.hpp>
 
-namespace fsw
-{
-  /**
-   * @brief Opaque structure containing implementation specific details of the
-   * FSEvents monitor.
-   */
-  struct inotify_monitor_impl;
+#include <sys/inotify.h>
+#include <string>
+#include <vector>
+#include <sys/stat.h>
 
-  /**
-   * @brief Solaris/Illumos monitor.
-   *
-   * This monitor is built upon the _File Events Notification_ API of the
-   * Solaris and Illumos kernels.
-   */
-  class inotify_monitor : public monitor
-  {
-  public:
+namespace fsw {
     /**
-     * @brief Constructs an instance of this class.
+     * @brief Opaque structure containing implementation specific details of the
+     * FSEvents monitor.
      */
-    inotify_monitor(std::vector<std::string> paths,
-                    FSW_EVENT_CALLBACK *callback,
-                    void *context = nullptr);
+    struct inotify_monitor_impl;
 
     /**
-     * @brief Destroys an instance of this class.
-     */
-    virtual ~inotify_monitor();
-
-  protected:
-    /**
-     * @brief Executes the monitor loop.
+     * @brief Solaris/Illumos monitor.
      *
-     * This call does not return until the monitor is stopped.
-     *
-     * @see stop()
+     * This monitor is built upon the _File Events Notification_ API of the
+     * Solaris and Illumos kernels.
      */
-    void run();
+    class inotify_monitor : public monitor {
+    public:
+        /**
+         * @brief Constructs an instance of this class.
+         */
+        inotify_monitor(std::vector<std::string> paths, FSW_EVENT_CALLBACK *callback, void *context = nullptr);
 
-  private:
-    inotify_monitor(const inotify_monitor& orig) = delete;
-    inotify_monitor& operator=(const inotify_monitor& that) = delete;
+        /**
+         * @brief Destroys an instance of this class.
+         */
+        virtual ~inotify_monitor();
 
-    void scan_root_paths();
-    bool is_watched(const std::string& path) const;
-    void preprocess_dir_event(struct inotify_event *event);
-    void preprocess_event(struct inotify_event *event);
-    void preprocess_node_event(struct inotify_event *event);
-    void scan(const std::string& path, const bool accept_non_dirs = true);
-    bool add_watch(const std::string& path,
-                   const struct stat& fd_stat);
-    void process_pending_events();
-    void remove_watch(int fd);
+    protected:
+        /**
+         * @brief Executes the monitor loop.
+         *
+         * This call does not return until the monitor is stopped.
+         *
+         * @see stop()
+         */
+        void run();
 
-    inotify_monitor_impl *impl;
-  };
-}
+    private:
+        inotify_monitor(const inotify_monitor &orig) = delete;
+        inotify_monitor &operator=(const inotify_monitor &that) = delete;
 
-#endif  /* FSW_INOTIFY_MONITOR_H */
+        void scan_root_paths();
+        bool is_watched(const std::string &path) const;
+        void preprocess_dir_event(struct inotify_event *event);
+        void preprocess_event(struct inotify_event *event);
+        void preprocess_node_event(struct inotify_event *event);
+        void scan(const std::string &path, const bool accept_non_dirs = true);
+        bool add_watch(const std::string &path, const struct stat &fd_stat);
+        void process_pending_events();
+        void remove_watch(int fd);
+
+        inotify_monitor_impl *impl;
+    };
+}    // namespace fsw
+
+#endif /* FSW_INOTIFY_MONITOR_H */

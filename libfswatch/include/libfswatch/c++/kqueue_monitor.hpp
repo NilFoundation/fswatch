@@ -24,74 +24,70 @@
  */
 
 #ifndef FSW_KQUEUE_MONITOR_H
-#  define FSW_KQUEUE_MONITOR_H
+#define FSW_KQUEUE_MONITOR_H
 
-#  include "monitor.hpp"
-#  include <string>
-#  include <vector>
-#  include <sys/stat.h>
-#  include <sys/event.h>
+#include <libfswatch/c++/monitor.hpp>
 
-namespace fsw
-{
-  /**
-   * @brief Opaque structure containing implementation specific details of the
-   * `kqueue` monitor.
-   */
-  struct kqueue_monitor_load;
+#include <string>
+#include <vector>
+#include <sys/stat.h>
+#include <sys/event.h>
 
-  /**
-   * @brief Solaris/Illumos monitor.
-   *
-   * This monitor is built upon the `kqueue` API of the BSD kernels.
-   */
-  class kqueue_monitor : public monitor
-  {
-  public:
+namespace fsw {
     /**
-     * @brief Constructs an instance of this class.
+     * @brief Opaque structure containing implementation specific details of the
+     * `kqueue` monitor.
      */
-    kqueue_monitor(std::vector<std::string> paths,
-                   FSW_EVENT_CALLBACK *callback,
-                   void *context = nullptr);
+    struct kqueue_monitor_load;
 
     /**
-     * @brief Destroys an instance of this class.
-     */
-    virtual ~kqueue_monitor();
-
-  protected:
-    /**
-     * @brief Executes the monitor loop.
+     * @brief Solaris/Illumos monitor.
      *
-     * This call does not return until the monitor is stopped.
-     *
-     * @see stop()
+     * This monitor is built upon the `kqueue` API of the BSD kernels.
      */
-    void run();
+    class kqueue_monitor : public monitor {
+    public:
+        /**
+         * @brief Constructs an instance of this class.
+         */
+        kqueue_monitor(std::vector<std::string> paths, FSW_EVENT_CALLBACK *callback, void *context = nullptr);
 
-  private:
-    kqueue_monitor(const kqueue_monitor& orig) = delete;
-    kqueue_monitor& operator=(const kqueue_monitor& that) = delete;
+        /**
+         * @brief Destroys an instance of this class.
+         */
+        virtual ~kqueue_monitor();
 
-    void initialize_kqueue();
-    void terminate_kqueue();
-    bool scan(const std::string& path, bool is_root_path = true);
-    bool add_watch(const std::string& path, const struct stat& fd_stat);
-    bool is_path_watched(const std::string& path) const;
-    void remove_deleted();
-    void rescan_pending();
-    void scan_root_paths();
-    int wait_for_events(const std::vector<struct kevent>& changes,
-                        std::vector<struct kevent>& event_list);
-    void process_events(const std::vector<struct kevent>& changes,
-                        const std::vector<struct kevent>& event_list,
-                        int event_num);
+    protected:
+        /**
+         * @brief Executes the monitor loop.
+         *
+         * This call does not return until the monitor is stopped.
+         *
+         * @see stop()
+         */
+        void run();
 
-    int kq = -1;
-    // initial load
-    kqueue_monitor_load *load;
-  };
-}
+    private:
+        kqueue_monitor(const kqueue_monitor &orig) = delete;
+        kqueue_monitor &operator=(const kqueue_monitor &that) = delete;
 
-#endif  /* FSW_KQUEUE_MONITOR_H */
+        void initialize_kqueue();
+        void terminate_kqueue();
+        bool scan(const std::string &path, bool is_root_path = true);
+        bool add_watch(const std::string &path, const struct stat &fd_stat);
+        bool is_path_watched(const std::string &path) const;
+        void remove_deleted();
+        void rescan_pending();
+        void scan_root_paths();
+        int wait_for_events(const std::vector<struct kevent> &changes, std::vector<struct kevent> &event_list);
+        void process_events(const std::vector<struct kevent> &changes,
+                            const std::vector<struct kevent> &event_list,
+                            int event_num);
+
+        int kq = -1;
+        // initial load
+        kqueue_monitor_load *load;
+    };
+}    // namespace fsw
+
+#endif /* FSW_KQUEUE_MONITOR_H */

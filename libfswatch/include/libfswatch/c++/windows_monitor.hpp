@@ -24,66 +24,63 @@
  */
 
 #ifndef FSW_WINDOWS_MONITOR_H
-#  define FSW_WINDOWS_MONITOR_H
+#define FSW_WINDOWS_MONITOR_H
 
-#  include "monitor.hpp"
-#  include <string>
-#  include <vector>
+#include <libfswatch/c++/monitor.hpp>
 
-namespace fsw
-{
-  /**
-   * @brief Opaque structure containing implementation specific details of the
-   * Windows monitor.
-   */
-  struct windows_monitor_load;
+#include <string>
+#include <vector>
 
-  /**
-   * @brief Windows monitor.
-   *
-   * This monitor is built upon the `ReadDirectoryChanges` API of the Windows
-   * operating systems.
-   */
-  class windows_monitor : public monitor
-  {
-  public:
+namespace fsw {
     /**
-     * @brief Constructs an instance of this class.
-    */
-    windows_monitor(std::vector<std::string> paths,
-                    FSW_EVENT_CALLBACK *callback,
-                    void *context = nullptr);
-
-    /**
-     * @brief Destroys an instance of this class.
+     * @brief Opaque structure containing implementation specific details of the
+     * Windows monitor.
      */
-    virtual ~windows_monitor();
+    struct windows_monitor_load;
 
-  protected:
     /**
-     * @brief Executes the monitor loop.
+     * @brief Windows monitor.
      *
-     * This call does not return until the monitor is stopped.
-     *
-     * @see stop()
+     * This monitor is built upon the `ReadDirectoryChanges` API of the Windows
+     * operating systems.
      */
-    void run();
+    class windows_monitor : public monitor {
+    public:
+        /**
+         * @brief Constructs an instance of this class.
+         */
+        windows_monitor(std::vector<std::string> paths, FSW_EVENT_CALLBACK *callback, void *context = nullptr);
 
-  private:
-    windows_monitor(const windows_monitor& orig) = delete;
-    windows_monitor& operator=(const windows_monitor& that) = delete;
+        /**
+         * @brief Destroys an instance of this class.
+         */
+        virtual ~windows_monitor();
 
-    void configure_monitor();
-    void initialize_windows_path_list();
-    void initialize_events();
-    bool init_search_for_path(const std::wstring path);
-    void stop_search_for_path(const std::wstring path);
-    void process_path(const std::wstring& path);
-    bool is_path_watched(std::wstring path);
+    protected:
+        /**
+         * @brief Executes the monitor loop.
+         *
+         * This call does not return until the monitor is stopped.
+         *
+         * @see stop()
+         */
+        void run();
 
-    // initial load
-    windows_monitor_load *load;
-  };
-}
+    private:
+        windows_monitor(const windows_monitor &orig) = delete;
+        windows_monitor &operator=(const windows_monitor &that) = delete;
 
-#endif  /* FSW_WINDOWS_MONITOR_H */
+        void configure_monitor();
+        void initialize_windows_path_list();
+        void initialize_events();
+        bool init_search_for_path(const std::wstring path);
+        void stop_search_for_path(const std::wstring path);
+        void process_path(const std::wstring &path);
+        bool is_path_watched(std::wstring path);
+
+        // initial load
+        windows_monitor_load *load;
+    };
+}    // namespace fsw
+
+#endif /* FSW_WINDOWS_MONITOR_H */

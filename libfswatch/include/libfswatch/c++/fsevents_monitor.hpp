@@ -24,79 +24,74 @@
  */
 
 #ifndef FSW_FSEVENT_MONITOR_H
-#  define FSW_FSEVENT_MONITOR_H
+#define FSW_FSEVENT_MONITOR_H
 
-#  include "monitor.hpp"
-#  include <CoreServices/CoreServices.h>
+#include <libfswatch/c++/monitor.hpp>
+#include <CoreServices/CoreServices.h>
 
-namespace fsw
-{
-  /**
-   * @brief OS X FSEvents monitor.
-   *
-   * This monitor is built upon the _FSEvents_ API of the Apple OS X kernel.
-   */
-  class fsevents_monitor : public monitor
-  {
-  public:
-
+namespace fsw {
     /**
-     * @brief Custom monitor property used to enable the kFSEventStreamCreateFlagNoDefer flag in the event stream.
+     * @brief OS X FSEvents monitor.
      *
-     * If you specify this flag and more than latency seconds have elapsed since
-     * the last event, your app will receive the event immediately.  The
-     * delivery of the event resets the latency timer and any further events
-     * will be delivered after latency seconds have elapsed.  This flag is
-     * useful for apps that are interactive and want to react immediately to
-     * changes but avoid getting swamped by notifications when changes are
-     * occurring in rapid succession.  If you do not specify this flag, then
-     * when an event occurs after a period of no events, the latency timer is
-     * started. Any events that occur during the next latency seconds will be
-     * delivered as one group (including that first event).  The delivery of the
-     * group of events resets the latency timer and any further events will be
-     * delivered after latency seconds.  This is the default behavior and is
-     * more appropriate for background, daemon or batch processing apps.
-     *
-     * @sa https://developer.apple.com/documentation/coreservices/kfseventstreamcreateflagnodefer
+     * This monitor is built upon the _FSEvents_ API of the Apple OS X kernel.
      */
-    static constexpr const char *DARWIN_EVENTSTREAM_NO_DEFER = "darwin.eventStream.noDefer";
+    class fsevents_monitor : public monitor {
+    public:
+        /**
+         * @brief Custom monitor property used to enable the kFSEventStreamCreateFlagNoDefer flag in the event stream.
+         *
+         * If you specify this flag and more than latency seconds have elapsed since
+         * the last event, your app will receive the event immediately.  The
+         * delivery of the event resets the latency timer and any further events
+         * will be delivered after latency seconds have elapsed.  This flag is
+         * useful for apps that are interactive and want to react immediately to
+         * changes but avoid getting swamped by notifications when changes are
+         * occurring in rapid succession.  If you do not specify this flag, then
+         * when an event occurs after a period of no events, the latency timer is
+         * started. Any events that occur during the next latency seconds will be
+         * delivered as one group (including that first event).  The delivery of the
+         * group of events resets the latency timer and any further events will be
+         * delivered after latency seconds.  This is the default behavior and is
+         * more appropriate for background, daemon or batch processing apps.
+         *
+         * @sa https://developer.apple.com/documentation/coreservices/kfseventstreamcreateflagnodefer
+         */
+        static constexpr const char *DARWIN_EVENTSTREAM_NO_DEFER = "darwin.eventStream.noDefer";
 
-    /**
-     * @brief Constructs an instance of this class.
-     */
-    fsevents_monitor(std::vector<std::string> paths,
-                     FSW_EVENT_CALLBACK *callback,
-                     void *context = nullptr);
-    fsevents_monitor(const fsevents_monitor& orig) = delete;
-    fsevents_monitor& operator=(const fsevents_monitor& that) = delete;
+        /**
+         * @brief Constructs an instance of this class.
+         */
+        fsevents_monitor(std::vector<std::string> paths, FSW_EVENT_CALLBACK *callback, void *context = nullptr);
+        fsevents_monitor(const fsevents_monitor &orig) = delete;
+        fsevents_monitor &operator=(const fsevents_monitor &that) = delete;
 
-  protected:
-    /**
-     * @brief Executes the monitor loop.
-     *
-     * This call does not return until the monitor is stopped.
-     *
-     * @see stop()
-     */
-    void run() override;
+    protected:
+        /**
+         * @brief Executes the monitor loop.
+         *
+         * This call does not return until the monitor is stopped.
+         *
+         * @see stop()
+         */
+        void run() override;
 
-    /**
-     * @brief Execute an implementation-specific stop handler.
-     */
-    void on_stop() override;
+        /**
+         * @brief Execute an implementation-specific stop handler.
+         */
+        void on_stop() override;
 
-  private:
-    static void fsevents_callback(ConstFSEventStreamRef streamRef,
-                                  void *clientCallBackInfo,
-                                  size_t numEvents,
-                                  void *eventPaths,
-                                  const FSEventStreamEventFlags eventFlags[],
-                                  const FSEventStreamEventId eventIds[]);
+    private:
+        static void fsevents_callback(ConstFSEventStreamRef streamRef,
+                                      void *clientCallBackInfo,
+                                      size_t numEvents,
+                                      void *eventPaths,
+                                      const FSEventStreamEventFlags eventFlags[],
+                                      const FSEventStreamEventId eventIds[]);
 
-    FSEventStreamRef stream = nullptr;
-    CFRunLoopRef run_loop = nullptr;
-    bool no_defer();
-  };
-}
+        FSEventStreamRef stream = nullptr;
+        CFRunLoopRef run_loop = nullptr;
+        bool no_defer();
+    };
+}    // namespace fsw
 
-#endif  /* FSW_FSEVENT_MONITOR_H */
+#endif /* FSW_FSEVENT_MONITOR_H */

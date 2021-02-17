@@ -24,74 +24,65 @@
  */
 
 #ifndef FSW_POLL_MONITOR_H
-#  define FSW_POLL_MONITOR_H
+#define FSW_POLL_MONITOR_H
 
-#  include "monitor.hpp"
-#  include <sys/stat.h>
-#  include <ctime>
+#include <libfswatch/c++/monitor.hpp>
 
-namespace fsw
-{
-  /**
-   * @brief `stat()`-based monitor.
-   *
-   * This monitor uses the `stat()` function to periodically check the observed
-   * paths and detect changes.
-   */
-  class poll_monitor : public monitor
-  {
-  public:
+#include <sys/stat.h>
+#include <ctime>
+
+namespace fsw {
     /**
-     * @brief Constructs an instance of this class.
+     * @brief `stat()`-based monitor.
+     *
+     * This monitor uses the `stat()` function to periodically check the observed
+     * paths and detect changes.
      */
-    poll_monitor(std::vector<std::string> paths,
-                 FSW_EVENT_CALLBACK *callback,
-                 void *context = nullptr);
+    class poll_monitor : public monitor {
+    public:
+        /**
+         * @brief Constructs an instance of this class.
+         */
+        poll_monitor(std::vector<std::string> paths, FSW_EVENT_CALLBACK *callback, void *context = nullptr);
 
-    /**
-     * @brief Destroys an instance of this class.
-     */
-    virtual ~poll_monitor();
+        /**
+         * @brief Destroys an instance of this class.
+         */
+        virtual ~poll_monitor();
 
-  protected:
-    void run();
+    protected:
+        void run();
 
-  private:
-    static const unsigned int MIN_POLL_LATENCY = 1;
+    private:
+        static const unsigned int MIN_POLL_LATENCY = 1;
 
-    poll_monitor(const poll_monitor& orig) = delete;
-    poll_monitor& operator=(const poll_monitor& that) = delete;
+        poll_monitor(const poll_monitor &orig) = delete;
+        poll_monitor &operator=(const poll_monitor &that) = delete;
 
-    typedef bool (poll_monitor::*poll_monitor_scan_callback)(
-      const std::string& path,
-      const struct stat& stat);
+        typedef bool (poll_monitor::*poll_monitor_scan_callback)(const std::string &path, const struct stat &stat);
 
-    typedef struct watched_file_info
-    {
-      time_t mtime;
-      time_t ctime;
-    } watched_file_info;
+        typedef struct watched_file_info {
+            time_t mtime;
+            time_t ctime;
+        } watched_file_info;
 
-    struct poll_monitor_data;
+        struct poll_monitor_data;
 
-    void scan(const std::string& path, poll_monitor_scan_callback fn);
-    void collect_initial_data();
-    void collect_data();
-    bool add_path(const std::string& path,
-                  const struct stat& fd_stat,
-                  poll_monitor_scan_callback poll_callback);
-    bool initial_scan_callback(const std::string& path, const struct stat& stat);
-    bool intermediate_scan_callback(const std::string& path,
-                                    const struct stat& stat);
-    void find_removed_files();
-    void swap_data_containers();
+        void scan(const std::string &path, poll_monitor_scan_callback fn);
+        void collect_initial_data();
+        void collect_data();
+        bool add_path(const std::string &path, const struct stat &fd_stat, poll_monitor_scan_callback poll_callback);
+        bool initial_scan_callback(const std::string &path, const struct stat &stat);
+        bool intermediate_scan_callback(const std::string &path, const struct stat &stat);
+        void find_removed_files();
+        void swap_data_containers();
 
-    poll_monitor_data *previous_data;
-    poll_monitor_data *new_data;
+        poll_monitor_data *previous_data;
+        poll_monitor_data *new_data;
 
-    std::vector<event> events;
-    time_t curr_time;
-  };
-}
+        std::vector<event> events;
+        time_t curr_time;
+    };
+}    // namespace fsw
 
-#endif  /* FSW_POLL_MONITOR_H */
+#endif /* FSW_POLL_MONITOR_H */

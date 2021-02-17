@@ -24,42 +24,40 @@
  */
 
 #ifndef LIBFSW_SET_H
-#  define LIBFSW_SET_H
+#define LIBFSW_SET_H
 
-#  ifdef HAVE_CONFIG_H
-#    include "libfswatch_config.h"
-#  endif
+#ifdef HAVE_CONFIG_H
+#include "libfswatch_config.h"
+#endif
 
-#  if defined(HAVE_UNORDERED_SET)
-#    include <unordered_set>
+#if defined(HAVE_UNORDERED_SET)
+#include <unordered_set>
 
-namespace fsw
-{
-  /**
-   * @brief Default set type used by `libfswatch`.
-   *
-   * This type definition will be a synonym of `std::unordered_set` if the C++
-   * library contains it, otherwise it will default to `std::set`.
-   */
-  template<typename K>
-  using fsw_hash_set = std::unordered_set<K>;
-}
+namespace fsw {
+    /**
+     * @brief Default set type used by `libfswatch`.
+     *
+     * This type definition will be a synonym of `std::unordered_set` if the C++
+     * library contains it, otherwise it will default to `std::set`.
+     */
+    template<typename K>
+    using fsw_hash_set = std::unordered_set<K>;
+}    // namespace fsw
 
-#  else
-#    include <set>
+#else
+#include <set>
 
-namespace fsw
-{
-  /**
-   * @brief Default set type used by `libfswatch`.
-   *
-   * This type definition will be a synonym of `std::unordered_set` if the C++
-   * library contains it, otherwise it will default to `std::set`.
-   */
-  template <typename K>
-  using fsw_hash_set = std::set<K>;
-}
+namespace fsw {
+    /**
+     * @brief Default set type used by `libfswatch`.
+     *
+     * This type definition will be a synonym of `std::unordered_set` if the C++
+     * library contains it, otherwise it will default to `std::set`.
+     */
+    template<typename K>
+    using fsw_hash_set = std::set<K>;
+}    // namespace fsw
 
-#  endif
+#endif
 
-#endif  /* LIBFSW_SET_H */
+#endif /* LIBFSW_SET_H */

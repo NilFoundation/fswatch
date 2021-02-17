@@ -24,42 +24,40 @@
  */
 
 #ifndef LIBFSW_MAP_H
-#  define LIBFSW_MAP_H
+#define LIBFSW_MAP_H
 
-#  ifdef HAVE_CONFIG_H
-#    include "libfswatch_config.h"
-#  endif
+#ifdef HAVE_CONFIG_H
+#include "libfswatch_config.h"
+#endif
 
-#  if defined(HAVE_UNORDERED_MAP)
-#    include <unordered_map>
+#if defined(HAVE_UNORDERED_MAP)
+#include <unordered_map>
 
-namespace fsw
-{
-  /**
-   * @brief Default associative container type used by `libfswatch`.
-   *
-   * This type definition will be a synonym of `std::unordered_map` if the C++
-   * library contains it, otherwise it will default to `std::map`.
-   */
-  template<typename K, typename V>
-  using fsw_hash_map = std::unordered_map<K, V>;
-}
+namespace fsw {
+    /**
+     * @brief Default associative container type used by `libfswatch`.
+     *
+     * This type definition will be a synonym of `std::unordered_map` if the C++
+     * library contains it, otherwise it will default to `std::map`.
+     */
+    template<typename K, typename V>
+    using fsw_hash_map = std::unordered_map<K, V>;
+}    // namespace fsw
 
-#  else
-#    include <map>
+#else
+#include <map>
 
-namespace fsw
-{
-  /**
-   * @brief Default associative container type used by `libfswatch`.
-   *
-   * This type definition will be a synonym of `std::unordered_map` if the C++
-   * library contains it, otherwise it will default to `std::map`.
-   */
-  template <typename K, typename V>
-  using fsw_hash_map = std::map<K, V>;
-}
+namespace fsw {
+    /**
+     * @brief Default associative container type used by `libfswatch`.
+     *
+     * This type definition will be a synonym of `std::unordered_map` if the C++
+     * library contains it, otherwise it will default to `std::map`.
+     */
+    template<typename K, typename V>
+    using fsw_hash_map = std::map<K, V>;
+}    // namespace fsw
 
-#  endif
+#endif
 
-#endif  /* LIBFSW_MAP_H */
+#endif /* LIBFSW_MAP_H */

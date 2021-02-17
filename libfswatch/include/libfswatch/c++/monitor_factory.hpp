@@ -26,98 +26,99 @@
  * @version 1.8.0
  */
 #ifndef FSW__MONITOR_FACTORY_H
-#  define FSW__MONITOR_FACTORY_H
+#define FSW__MONITOR_FACTORY_H
 
-#include "monitor.hpp"
-#include "libfswatch_set.hpp"
+#include <libfswatch/c++/monitor.hpp>
+#include <libfswatch/c++/libfswatch_set.hpp>
 
-namespace fsw
-{
-  /**
-   * @brief Object factory class for fsw::monitor instances.
-   *
-   * Since multiple monitor implementations exist and the caller potentially
-   * ignores which monitors will be available at run time, there must exist a
-   * way to query the API for the list of available monitor and request a
-   * particular instance.  The fsw::monitor_factory is an object factory class
-   * that provides basic monitor _registration_ and _discovery_ functionality:
-   * API clients can query the monitor registry to get a list of available
-   * monitors and get an instance of a monitor either by _type_ or by _name_.
-   *
-   * In order for monitor types to be visible to the factory they have to be
-   * _registered_.  Currently, monitor implementations are registered at compile
-   * time.
-   *
-   * The same monitor type cannot be used to register multiple monitor
-   * implementations.  No checks are in place to detect this situation and the
-   * registration will succeed; however, the registration process of multiple
-   * monitor implementations for the same monitor type is _not_ deterministic.
-   */
-  class monitor_factory
-  {
-  public:
+namespace fsw {
     /**
-     * @brief Creates a monitor of the specified @p type.
+     * @brief Object factory class for fsw::monitor instances.
      *
-     * The other parameters are forwarded to the fsw::monitor() constructor.
+     * Since multiple monitor implementations exist and the caller potentially
+     * ignores which monitors will be available at run time, there must exist a
+     * way to query the API for the list of available monitor and request a
+     * particular instance.  The fsw::monitor_factory is an object factory class
+     * that provides basic monitor _registration_ and _discovery_ functionality:
+     * API clients can query the monitor registry to get a list of available
+     * monitors and get an instance of a monitor either by _type_ or by _name_.
      *
-     * @param type The monitor type.
-     * @param paths The paths to watch.
-     * @param callback The callback to invoke during the notification of a
-     * change event.
-     * @return The newly created monitor.
-     * @throw libfsw_exception if a monitor of the specified @p type cannot be
-     * found.
-     * @see fsw::monitor()
+     * In order for monitor types to be visible to the factory they have to be
+     * _registered_.  Currently, monitor implementations are registered at compile
+     * time.
+     *
+     * The same monitor type cannot be used to register multiple monitor
+     * implementations.  No checks are in place to detect this situation and the
+     * registration will succeed; however, the registration process of multiple
+     * monitor implementations for the same monitor type is _not_ deterministic.
      */
-    static monitor *create_monitor(fsw_monitor_type type,
-                                   std::vector<std::string> paths,
-                                   FSW_EVENT_CALLBACK *callback,
-                                   void *context = nullptr);
+    class monitor_factory {
+    public:
+        /**
+         * @brief Creates a monitor of the specified @p type.
+         *
+         * The other parameters are forwarded to the fsw::monitor() constructor.
+         *
+         * @param type The monitor type.
+         * @param paths The paths to watch.
+         * @param callback The callback to invoke during the notification of a
+         * change event.
+         * @return The newly created monitor.
+         * @throw libfsw_exception if a monitor of the specified @p type cannot be
+         * found.
+         * @see fsw::monitor()
+         */
+        static monitor *create_monitor(fsw_monitor_type type,
+                                       std::vector<std::string>
+                                           paths,
+                                       FSW_EVENT_CALLBACK *callback,
+                                       void *context = nullptr);
 
-    /**
-     * @brief Creates a monitor whose type is the specified by @p name.
-     *
-     * The other parameters are forwarded to the fsw::monitor() constructor.
-     *
-     * @param name The monitor type.
-     * @param paths The paths to watch.
-     * @param callback The callback to invoke during the notification of a
-     * change event.
-     * @return The newly created monitor.
-     * @throw libfsw_exception if a monitor of the type specified by @p name
-     * cannot be found.
-     * @see fsw::monitor()
-     */
-    static monitor *create_monitor(const std::string& name,
-                                   std::vector<std::string> paths,
-                                   FSW_EVENT_CALLBACK *callback,
-                                   void *context = nullptr);
+        /**
+         * @brief Creates a monitor whose type is the specified by @p name.
+         *
+         * The other parameters are forwarded to the fsw::monitor() constructor.
+         *
+         * @param name The monitor type.
+         * @param paths The paths to watch.
+         * @param callback The callback to invoke during the notification of a
+         * change event.
+         * @return The newly created monitor.
+         * @throw libfsw_exception if a monitor of the type specified by @p name
+         * cannot be found.
+         * @see fsw::monitor()
+         */
+        static monitor *create_monitor(const std::string &name,
+                                       std::vector<std::string>
+                                           paths,
+                                       FSW_EVENT_CALLBACK *callback,
+                                       void *context = nullptr);
 
-    /**
-     * @brief Get the available monitor types.
-     *
-     * @return A vector with the available monitor types.
-     */
-    static std::vector<std::string> get_types();
+        /**
+         * @brief Get the available monitor types.
+         *
+         * @return A vector with the available monitor types.
+         */
+        static std::vector<std::string> get_types();
 
-    /**
-     * @brief Checks whether a monitor of the type specified by @p name exists.
-     *
-     * @return `true` if @p name specifies a valid monitor type, `false`
-     * otherwise.
-     *
-     * @param name The name of the monitor type to look for.
-     * @return `true` if the type @p name exists, `false` otherwise.
-     */
-    static bool exists_type(const std::string& name);
+        /**
+         * @brief Checks whether a monitor of the type specified by @p name exists.
+         *
+         * @return `true` if @p name specifies a valid monitor type, `false`
+         * otherwise.
+         *
+         * @param name The name of the monitor type to look for.
+         * @return `true` if the type @p name exists, `false` otherwise.
+         */
+        static bool exists_type(const std::string &name);
 
-    monitor_factory() = delete;
-    monitor_factory(const monitor_factory& orig) = delete;
-    monitor_factory& operator=(const monitor_factory& that) = delete;
-  private:
-    static std::map<std::string, fsw_monitor_type>& creators_by_string();
-  };
-}
+        monitor_factory() = delete;
+        monitor_factory(const monitor_factory &orig) = delete;
+        monitor_factory &operator=(const monitor_factory &that) = delete;
 
-#endif  /* FSW__MONITOR_FACTORY_H */
+    private:
+        static std::map<std::string, fsw_monitor_type> &creators_by_string();
+    };
+}    // namespace fsw
+
+#endif /* FSW__MONITOR_FACTORY_H */

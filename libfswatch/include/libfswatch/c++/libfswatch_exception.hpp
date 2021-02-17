@@ -24,64 +24,63 @@
  */
 
 #ifndef LIBFSW_EXCEPTION_H
-#  define LIBFSW_EXCEPTION_H
+#define LIBFSW_EXCEPTION_H
 
-#  include "../c/error.h"
-#  include <exception>
-#  include <string>
+#include <libfswatch/c/error.h>
 
-namespace fsw
-{
-  /**
-   * @brief Base exception of the `libfswatch` library.
-   *
-   * An instance of this class stores an error message and an integer error
-   * code.
-   */
-  class libfsw_exception : public std::exception
-  {
-  public:
+#include <exception>
+#include <string>
+
+namespace fsw {
     /**
-     * @brief Constructs an exception with the specified @p cause and error
-     * @p code.
+     * @brief Base exception of the `libfswatch` library.
      *
-     * @param cause The error message.
-     * @param code The error code.
+     * An instance of this class stores an error message and an integer error
+     * code.
      */
-    libfsw_exception(std::string cause, int code = FSW_ERR_UNKNOWN_ERROR);
+    class libfsw_exception : public std::exception {
+    public:
+        /**
+         * @brief Constructs an exception with the specified @p cause and error
+         * @p code.
+         *
+         * @param cause The error message.
+         * @param code The error code.
+         */
+        libfsw_exception(std::string cause, int code = FSW_ERR_UNKNOWN_ERROR);
 
-    libfsw_exception( const libfsw_exception& other ) noexcept;
+        libfsw_exception(const libfsw_exception &other) noexcept;
 
-    libfsw_exception& operator=(const libfsw_exception&) noexcept;
+        libfsw_exception &operator=(const libfsw_exception &) noexcept;
 
-    /**
-     * @brief Gets the error message.
-     *
-     * @return The error message.
-     */
-    virtual const char *what() const noexcept;
+        /**
+         * @brief Gets the error message.
+         *
+         * @return The error message.
+         */
+        virtual const char *what() const noexcept;
 
-    /**
-     * @brief Gets the error code.
-     *
-     * @return The error code.
-     */
-    virtual int error_code() const noexcept;
+        /**
+         * @brief Gets the error code.
+         *
+         * @return The error code.
+         */
+        virtual int error_code() const noexcept;
 
-    /**
-     * @brief Destructs an instance of this class.
-     */
-    virtual ~libfsw_exception() noexcept;
+        /**
+         * @brief Destructs an instance of this class.
+         */
+        virtual ~libfsw_exception() noexcept;
 
-    /**
-     * @brief Gets the error code.
-     */
-    explicit operator int() const noexcept;
+        /**
+         * @brief Gets the error code.
+         */
+        explicit operator int() const noexcept;
 
-  private:
-    std::string cause;
-    int code;
-  };
-}
+    private:
+        std::string cause;
+        int code;
+    };
+}    // namespace fsw
 
-#endif  /* LIBFSW_EXCEPTION_H */
+#endif /* LIBFSW_EXCEPTION_H */
